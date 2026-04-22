@@ -80,7 +80,7 @@ jobs:
       - name: Tests avec couverture de code
         run: php artisan test --coverage-clover=build/logs/clover.xml --log-junit=build/logs/junit.xml
       - name: Analyse SonarCloud
-        uses: SonarSource/sonarqube-scan-action@v4
+        uses: SonarSource/sonarqube-scan-action@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

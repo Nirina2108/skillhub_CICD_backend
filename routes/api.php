@@ -22,11 +22,12 @@ Route::post('/logout',   [AuthController::class, 'logout']);
 Route::post('/profil/photo', [AuthController::class, 'uploadPhoto']);
 
 // ─── Formations ───────────────────────────────────────────────
-Route::get('/formations',        [FormationController::class, 'index']);
-Route::get('/formations/{id}',   [FormationController::class, 'show']);
-Route::post('/formations',       [FormationController::class, 'store']);
-Route::put('/formations/{id}',   [FormationController::class, 'update']);
-Route::delete('/formations/{id}',[FormationController::class, 'destroy']);
+Route::get('/formations',                [FormationController::class, 'index']);
+Route::get('/formations/{id}',           [FormationController::class, 'show']);
+Route::post('/formations',               [FormationController::class, 'store']);
+Route::put('/formations/{id}',           [FormationController::class, 'update']);
+Route::delete('/formations/{id}',        [FormationController::class, 'destroy']);
+Route::get('/formations/{id}/apprenants',[FormationController::class, 'apprenants']);
 
 // ─── Modules ──────────────────────────────────────────────────
 Route::get('/formations/{id}/modules',  [ModuleController::class, 'index']);

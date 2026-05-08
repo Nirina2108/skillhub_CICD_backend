@@ -23,6 +23,22 @@ jobs:
     name: Tests, Couverture et Analyse SonarCloud
     runs-on: ubuntu-latest
 
+    # Service MongoDB lightweight pour les tests de messagerie
+    # (le module Message persiste les conversations dans MongoDB).
+    # Ce n'est PAS le build d'image Docker de l'application : juste un
+    # container mongo:6 pre-construit que GitHub telecharge en ~10s.
+    # Sans ce service, MessageControllerTest et ModelsRelationsTest
+    # echouent avec "connection refused on 127.0.0.1:27017".
+    services:
+      mongodb:
+        image: mongo:6
+        ports: ["27017:27017"]
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand(\"ping\").ok'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       # Etape 1 - Checkout du code source.
       # fetch-depth: 0 clone tout l'historique git (pas juste le dernier commit).
@@ -33,16 +49,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Etape 2 - Installation de PHP 8.2 avec l'extension pcov.
-      # pcov mesure la couverture pendant l'execution des tests
-      # (quelles lignes sont parcourues, combien de fois). Sans pcov,
-      # PHPUnit produirait un fichier clover.xml vide et la couverture
-      # afficherait 0 % sur SonarCloud.
-      - name: Installation de PHP 8.2 avec pcov
+      # Etape 2 - Installation de PHP 8.2 avec les extensions necessaires.
+      # - pcov           : mesure la couverture pendant l'execution des tests
+      #                    (sans pcov, clover.xml serait vide => 0 % sur SonarCloud)
+      # - mongodb-2.2.0  : extension PHP pour communiquer avec le container MongoDB
+      #                    declare en services ci-dessus (sans elle, les tests de
+      #                    messagerie ne peuvent pas faire d'appel a MongoDB)
+      # - pdo_sqlite     : pilote SQLite pour les tests qui tournent sur :memory:
+      - name: Installation de PHP 8.2 avec extensions
         uses: shivammathur/setup-php@v2
         with:
           php-version: "8.2"
-          extensions: mbstring, xml, pdo_sqlite, pcov
+          extensions: mbstring, xml, pdo_sqlite, mongodb-2.2.0, pcov
           coverage: pcov
 
       # Etape 3 - Cache des dependances Composer.
